@@ -10,7 +10,6 @@
 --------------------------------------------------- */
 
 /* Exit if accessed directly */
-global $acf_clean_1, $acf_clean_2, $acf_db_prefix, $acf_prefix;
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -19,10 +18,11 @@ if (!defined('ABSPATH')) {
 if (!defined('CF_CLEANER')) {
     die();
 }
+global $cf_clean_1, $cf_clean_2, $cf_db_prefix, $cf_prefix;
 
 /* Define the action (select | delete) */
-define('ACF_ACTION_1', $acf_clean_1 ? 'DELETE' : 'SELECT *');
-define('ACF_ACTION_2', $acf_clean_2 ? 'DELETE' : 'SELECT *');
+define('CF_ACTION_1', $cf_clean_1 ? 'DELETE' : 'SELECT *');
+define('CF_ACTION_2', $cf_clean_2 ? 'DELETE' : 'SELECT *');
 
 /* Some variables */
 $err = false;
@@ -33,14 +33,14 @@ $cnt_1 = 0;
 $cnt_2 = 0;
 $cnt_fields = 0;
 $cnt_values = 0;
-$acf_empty = 0;
-$acf_orphan = 0;
+$cf_empty = 0;
+$cf_orphan = 0;
 $sql = 0;
 
-$inf .= '<h3>Database : ' . DB_NAME . ' // <span id="acf_total">0</span> ACF-records</h3>';
-$inf .= '<b><span id="acf_cnt">0</span> entries</b> found (in <span id="acf_fields">0</span> ACF-fields / <span id="acf_values">0</span> ACF-values), after performing <a onclick="(function($){try{$(\'#acf_help\').toggle();}catch(e){}}(jQuery));" style="text-decoration:underline;cursor:pointer;" title="query info"><span id="acf_sql">0</span>#5 queries</a>.';
-$inf .= '<p><ol id="acf_help" style="display:none;">';
-$inf .= '<li>Get all ACF-field names.</li>';
+$inf .= '<h3>Database : ' . DB_NAME . ' // <span id="cf_total">0</span> CF-records</h3>';
+$inf .= '<b><span id="cf_cnt">0</span> entries</b> found (in <span id="cf_fields">0</span> CF-fields / <span id="cf_values">0</span> CF-values), after performing <a onclick="(function($){try{$(\'#cf_help\').toggle();}catch(e){}}(jQuery));" style="text-decoration:underline;cursor:pointer;" title="query info"><span id="cf_sql">0</span>#5 queries</a>.';
+$inf .= '<p><ol id="cf_help" style="display:none;">';
+$inf .= '<li>Get all CF-field names.</li>';
 $inf .= '<li>Get <b>orphaned</b> parent entries (<i>field ID</i>).</li>';
 $inf .= '<li>Select / delete orphaned parent and child.</li>';
 $inf .= '<li>Get <b>empty</b> child entries (<i>value</i>).</li>';
@@ -60,10 +60,10 @@ if ($connection->connect_error) {
 
 /* --------------------------------------------------- */
 /* --------------------------------------------------- */
-/* 1#3 - Save all available ACF-fields to an array */
+/* 1#3 - Save all available CF-fields to an array */
 /* --------------------------------------------------- */
 /* --------------------------------------------------- */
-$query = 'SELECT DISTINCT `meta_key` FROM `' . $acf_db_prefix . 'postmeta`';
+$query = 'SELECT DISTINCT `meta_key` FROM `' . $cf_db_prefix . 'postmeta`';
 
 $result = $array_fields = null;
 
@@ -82,7 +82,7 @@ if ($result) {
 
     mysqli_free_result($result);
 } else {
-    /* No ACF-fields found at all */
+    /* No CF-fields found at all */
     $msg .= 'No entries found during the <b>1st</b> query [<b>Fieldnames</b>].<br>';
 }
 
@@ -90,10 +90,10 @@ $cnt_fields = $array_fields ? count($array_fields) : 0;
 
 /* --------------------------------------------------- */
 /* --------------------------------------------------- */
-/* 2#3 - Get all orphaned ACF-field entries */
+/* 2#3 - Get all orphaned CF-field entries */
 /* --------------------------------------------------- */
 /* --------------------------------------------------- */
-$query = 'SELECT `meta_id` FROM `' . $acf_db_prefix . 'postmeta` pm LEFT JOIN ' . $acf_db_prefix . 'posts wp ON wp.ID = pm.post_id WHERE wp.ID IS NULL';
+$query = 'SELECT `meta_id` FROM `' . $cf_db_prefix . 'postmeta` pm LEFT JOIN ' . $cf_db_prefix . 'posts wp ON wp.ID = pm.post_id WHERE wp.ID IS NULL';
 $result = null;
 
 if ($cnt_fields > 0) {
@@ -122,7 +122,7 @@ if ($result) {
 /* --------------------------------------------------- */
 /* Select or delete ORPHANED entries (parent & child) */
 /* --------------------------------------------------- */
-$query = ACF_ACTION_1 . ' FROM `' . $acf_db_prefix . 'postmeta` WHERE `meta_id` IN (' . implode(',', $array_fields ?? array()) . ')';
+$query = CF_ACTION_1 . ' FROM `' . $cf_db_prefix . 'postmeta` WHERE `meta_id` IN (' . implode(',', $array_fields ?? array()) . ')';
 $result = null;
 
 if (count($array_fields ?? array())) {
@@ -131,19 +131,19 @@ if (count($array_fields ?? array())) {
     }
 }
 
-_e('<h4>ORPHANED ENTRIES <span id="acf_orphan" style="color:#888;">#0</span></h4>', 'cf_cleaner');
+_e('<h4>ORPHANED ENTRIES <span id="cf_orphan" style="color:#888;">#0</span></h4>', 'cf_cleaner');
 echo '<table class="widefat fixed striped">';
 echo '<thead><tr><td>Entry</td><td>Type</td><td><code>meta_id</code></td><td><code>post_id</code></td><td><code>meta_key</code></td><td><code>meta_value</code></td></tr></thead>';
 echo '<tfoot><tr><td>Entry</td><td>Type</td><td><code>meta_id</code></td><td><code>post_id</code></td><td><code>meta_key</code></td><td><code>meta_value</code></td></tr></tfoot><tbody>';
 
 /* When entries are available, iterate onthem */
-if ($result && !$acf_clean_1) {
+if ($result && !$cf_clean_1) {
     $sql++;
     $i = 0;
 
     while ($row = $result->fetch_assoc()) {
         $i++;
-        $acf_orphan++;
+        $cf_orphan++;
 
         echo '<tr>';
         echo '<td>' . sprintf('%03d', $i) . '</td>';
@@ -167,10 +167,10 @@ echo '</tbody></table>';
 
 /* --------------------------------------------------- */
 /* --------------------------------------------------- */
-/* 3#3 - Get all empty ACF-field entries */
+/* 3#3 - Get all empty CF-field entries */
 /* --------------------------------------------------- */
 /* --------------------------------------------------- */
-$query = 'SELECT `meta_id` FROM `' . $acf_db_prefix . 'postmeta` WHERE upper(`meta_key`) LIKE "' . strtoupper($acf_prefix) . '%" AND `meta_value` = ""';
+$query = 'SELECT `meta_id` FROM `' . $cf_db_prefix . 'postmeta` WHERE upper(`meta_key`) LIKE "' . strtoupper($cf_prefix) . '%" AND `meta_value` = ""';
 $result = null;
 
 if (!$result = $connection->query($query)) {
@@ -195,7 +195,7 @@ if ($result) {
     /* --------------------------------------------------- */
     /* Select or delete EMPTY entries (parent & child) */
     /* --------------------------------------------------- */
-    $query = ACF_ACTION_2 . ' FROM `' . $acf_db_prefix . 'postmeta` WHERE `meta_id` IN (' . implode(',', $array_values) . ')';
+    $query = CF_ACTION_2 . ' FROM `' . $cf_db_prefix . 'postmeta` WHERE `meta_id` IN (' . implode(',', $array_values) . ')';
     $result = null;
 
     if (count($array_values)) {
@@ -204,19 +204,19 @@ if ($result) {
         }
     }
 
-    _e('<h4>EMPTY ENTRIES <span id="acf_empty" style="color:#888;">#0</span></h4>', 'cf_cleaner');
+    _e('<h4>EMPTY ENTRIES <span id="cf_empty" style="color:#888;">#0</span></h4>', 'cf_cleaner');
     echo '<table class="widefat fixed striped">';
     echo '<thead><tr><td>Entry</td><td>Type</td><td><code>meta_id</code></td><td><code>post_id</code></td><td><code>meta_key</code></td><td><code>meta_value</code></td></tr></thead>';
     echo '<tfoot><tr><td>Entry</td><td>Type</td><td><code>meta_id</code></td><td><code>post_id</code></td><td><code>meta_key</code></td><td><code>meta_value</code></td></tr></tfoot><tbody>';
 
     /* When entries are found, iterate them */
-    if ($result && !$acf_clean_2) {
+    if ($result && !$cf_clean_2) {
         $sql++;
         $i = 0;
 
         while ($row = $result->fetch_assoc()) {
             $i++;
-            $acf_empty++;
+            $cf_empty++;
             echo '<tr>';
             echo '<td>' . sprintf('%03d', $i) . '</td>';
             echo '<td><code>empty</code></td>';
@@ -259,7 +259,7 @@ if ($msg || $err) {
     <?php
 }
 
-$query = 'SELECT `meta_id` FROM `' . $acf_db_prefix . 'postmeta` WHERE upper(`meta_key`) LIKE "%' . strtoupper($acf_prefix) . '%"';
+$query = 'SELECT `meta_id` FROM `' . $cf_db_prefix . 'postmeta` WHERE upper(`meta_key`) LIKE "%' . strtoupper($cf_prefix) . '%"';
 $result = null;
 
 if ($result) {
@@ -269,14 +269,14 @@ if ($result) {
 
 /* Get final result [what is not-cleaned | left] */
 
-$acf_total = $cnt_1 + $cnt_2;
+$cf_total = $cnt_1 + $cnt_2;
 
-if ($acf_clean_1) {
-    $acf_total -= $cnt_1;
+if ($cf_clean_1) {
+    $cf_total -= $cnt_1;
 }
 
-if ($acf_clean_2) {
-    $acf_total -= $cnt_2;
+if ($cf_clean_2) {
+    $cf_total -= $cnt_2;
 }
 
 /* Close the connection */
@@ -288,42 +288,42 @@ mysqli_close($connection);
 echo '<script>(function($) {
 
           try {
-            $("#acf_cnt").text("' . $acf_total . '");
-            $("#acf_orphan").text("#' . $acf_orphan . '");
-            $("#acf_empty").text("#' . $acf_empty . '");
-            $("#acf_fields").text("' . $cnt_fields . '");
-            $("#acf_values").text("' . $cnt_values . '");
-            $("#acf_total").text("' . ($cnt_fields + intval($cnt_values)) . '");
-            $("#acf_sql").text("' . $sql . '");
+            $("#cf_cnt").text("' . $cf_total . '");
+            $("#cf_orphan").text("#' . $cf_orphan . '");
+            $("#cf_empty").text("#' . $cf_empty . '");
+            $("#cf_fields").text("' . $cnt_fields . '");
+            $("#cf_values").text("' . $cnt_values . '");
+            $("#cf_total").text("' . ($cnt_fields + intval($cnt_values)) . '");
+            $("#cf_sql").text("' . $sql . '");
           } catch(e) {
             /* TODO */
           }
         } (jQuery));
   </script>';
 
-if ($acf_clean_1 || $acf_clean_2) {
+if ($cf_clean_1 || $cf_clean_2) {
     /* Show final result, on top of page */
     ?>
 
-    <div class="notice notice-success is-dismissible hidden" id="acf_succeed">
+    <div class="notice notice-success is-dismissible hidden" id="cf_succeed">
         <p>
-            <?php _e('<b>Succeeded</b> : ACF Cleaner removed <b><span>0</span> entries</b>.', 'cf_cleaner'); ?>
+            <?php _e('<b>Succeeded</b> : CF Cleaner removed <b><span>0</span> entries</b>.', 'cf_cleaner'); ?>
         </p>
     </div>
 
     <?php
     if (!$err) {
         /* Get final result [what is cleaned] */
-        $acf_total = 0;
+        $cf_total = 0;
 
-        if ($acf_clean_1) {
-            $acf_total += $cnt_1;
+        if ($cf_clean_1) {
+            $cf_total += $cnt_1;
         }
 
-        if ($acf_clean_2) {
-            $acf_total += $cnt_2;
+        if ($cf_clean_2) {
+            $cf_total += $cnt_2;
         }
 
-        echo '<script>(function($){try{$("#acf_succeed span").text("' . $acf_total . '");$("#acf_succeed").removeClass("hidden");}catch(e){}}(jQuery));</script>';
+        echo '<script>(function($){try{$("#cf_succeed span").text("' . $cf_total . '");$("#cf_succeed").removeClass("hidden");}catch(e){}}(jQuery));</script>';
     }
 }
