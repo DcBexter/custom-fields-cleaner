@@ -4,22 +4,23 @@
 if ( ! defined( 'ABSPATH' ) ) {
   exit;
 }
+global $wpdb;
 
 $acf_ajax = str_contains($_SERVER['HTTP_ACCEPT'], 'application') ?'false':'true';
 $acf_clean_1 = false;
 $acf_clean_2 = false;
 $acf_filter = 0;
 $acf_prefix = 'ACF_';
-$acf_db_prefix = 'wp_';
+$acf_db_prefix = $wpdb->prefix;
 
   if ($acf_ajax == 'true') {
-    _e('<h2>Access denied.</h2>', 'acf_cleaner');
+    _e('<h2>Access denied.</h2>', 'cf_cleaner');
   } else if(is_user_logged_in() && is_admin()) {
 
 ?>
 
 <div class="wrap">
-  <h2><?php _e('ACF Cleaner', 'acf_cleaner'); ?></h2>
+  <h2><?php _e('ACF Cleaner', 'cf_cleaner'); ?></h2>
 
 <?php
 
@@ -75,7 +76,7 @@ if (!empty($_COOKIE['acf_db_prefix']) && strlen($_COOKIE['acf_db_prefix']) > 1) 
 
   <div class="notice notice-error is-dismissible">
     <p>
-      <?php printf( __('<b>Error</b> : passphrase doesn\'t match "<code>%1$s</code>".', 'acf_cleaner'), 'clean'); ?>
+      <?php printf( __('<b>Error</b> : passphrase doesn\'t match "<code>%1$s</code>".', 'cf_cleaner'), 'clean'); ?>
     </p>
   </div>
 
@@ -89,7 +90,7 @@ if (!empty($_COOKIE['acf_db_prefix']) && strlen($_COOKIE['acf_db_prefix']) > 1) 
 
   <div class="notice notice-warning is-dismissible">
     <p>
-      <?php printf( __('Before you do any cleaning <a href="%1$s" target="%2$s" title="view plug-in (external)">backup</a> your database first.<br>This tool only proceeds (ACF) fieldnames with a consistent prefix, like <code>ACF__</code> (case-insensitive).<br><b>Notice :</b> when restoring ACF-entries from trash, <i>false positives</i> can show up as orphans; (re-) save all pages (containing those entries) before cleaning.', 'acf_cleaner'), 'https://wordpress.org/plugins/wp-dbmanager/', '_blank'); ?>
+      <?php printf( __('Before you do any cleaning <a href="%1$s" target="%2$s" title="view plug-in (external)">backup</a> your database first.<br>This tool only proceeds (ACF) fieldnames with a consistent prefix, like <code>ACF__</code> (case-insensitive).<br><b>Notice :</b> when restoring ACF-entries from trash, <i>false positives</i> can show up as orphans; (re-) save all pages (containing those entries) before cleaning.', 'cf_cleaner'), 'https://wordpress.org/plugins/wp-dbmanager/', '_blank'); ?>
     </p>
   </div>
 
@@ -124,28 +125,28 @@ if (!empty($_COOKIE['acf_db_prefix']) && strlen($_COOKIE['acf_db_prefix']) > 1) 
     <table class="form-table">
 
       <tr>
-      <th scope="row"><?php _e('What to clean :', 'acf_cleaner'); ?></th>
+      <th scope="row"><?php _e('What to clean :', 'cf_cleaner'); ?></th>
       <td>
           <label for="acf_filter"></label><select style="min-width:160px;" name="acf_filter" id="acf_filter">
-          <option value="3"<?php if ($acf_filter == '3' || $acf_filter == '0') { echo ' selected'; } ?>><?php _e('Clean all', 'acf_cleaner'); ?></option>
-          <option value="1"<?php if ($acf_filter == '1') { echo ' selected'; } ?>><?php _e('Orphans only', 'acf_cleaner'); ?></option>
-          <option value="2"<?php if ($acf_filter == '2') { echo ' selected'; } ?>><?php _e('Empty only', 'acf_cleaner'); ?></option>
+          <option value="3"<?php if ($acf_filter == '3' || $acf_filter == '0') { echo ' selected'; } ?>><?php _e('Clean all', 'cf_cleaner'); ?></option>
+          <option value="1"<?php if ($acf_filter == '1') { echo ' selected'; } ?>><?php _e('Orphans only', 'cf_cleaner'); ?></option>
+          <option value="2"<?php if ($acf_filter == '2') { echo ' selected'; } ?>><?php _e('Empty only', 'cf_cleaner'); ?></option>
         </select>
       </td>
       </tr>
 
       <tr>
-      <th scope="row"><?php _e('Database-table prefix :', 'acf_cleaner'); ?></th>
+      <th scope="row"><?php _e('Database-table prefix :', 'cf_cleaner'); ?></th>
       <td><label for="acf_db_prefix"></label><input type="text" name="acf_db_prefix" id="acf_db_prefix" value="<?php echo $acf_db_prefix; ?>" placeholder="wp_" style="min-width:160px;"></td>
       </tr>
 
       <tr>
-      <th scope="row"><?php _e('Field prefix (at least 3 chrs.) :', 'acf_cleaner'); ?></th>
+      <th scope="row"><?php _e('Field prefix (at least 3 chrs.) :', 'cf_cleaner'); ?></th>
       <td><label for="acf_prefix"></label><input type="text" name="acf_prefix" id="acf_prefix" value="<?php echo $acf_prefix; ?>" placeholder="acf_" style="min-width:160px;"></td>
       </tr>
 
       <tr>
-      <th scope="row"><?php printf( __('Type <code>%1$s</code> before submit :', 'acf_cleaner'), 'clean'); ?></th>
+      <th scope="row"><?php printf( __('Type <code>%1$s</code> before submit :', 'cf_cleaner'), 'clean'); ?></th>
       <td><label>
               <input type="text" name="acf_clean" value="" placeholder="..." style="min-width:160px;">
           </label></td>
@@ -154,8 +155,8 @@ if (!empty($_COOKIE['acf_db_prefix']) && strlen($_COOKIE['acf_db_prefix']) > 1) 
     </table>
 
     <p>
-      <button data-action="acf-clean" class="button button-primary" type="submit"><?php _e('ACF <b>clean</b>', 'acf_cleaner'); ?></button>
-      <button data-action="acf-check" class="button button-secondary" type="button" onclick="acf_prefix_save();window.location.reload();"><?php _e('ACF <b>check</b>', 'acf_cleaner'); ?></button>
+      <button data-action="acf-clean" class="button button-primary" type="submit"><?php _e('ACF <b>clean</b>', 'cf_cleaner'); ?></button>
+      <button data-action="acf-check" class="button button-secondary" type="button" onclick="acf_prefix_save();window.location.reload();"><?php _e('ACF <b>check</b>', 'cf_cleaner'); ?></button>
     </p>
 
   </form>
@@ -165,8 +166,8 @@ if (!empty($_COOKIE['acf_db_prefix']) && strlen($_COOKIE['acf_db_prefix']) > 1) 
 
 <?php
 
-  define('ACF_CLEANER', true);
-  require __DIR__ . '/acf-cleaner-queries.php'
+  define('CF_CLEANER', true);
+  require __DIR__ . '/cf-cleaner-queries.php'
 
 ?>
 </div>
@@ -175,7 +176,7 @@ if (!empty($_COOKIE['acf_db_prefix']) && strlen($_COOKIE['acf_db_prefix']) > 1) 
 
   } else {
 
-    _e('<h2>Access denied.</h2>', 'acf_cleaner');
+    _e('<h2>Access denied.</h2>', 'cf_cleaner');
 
   }
 

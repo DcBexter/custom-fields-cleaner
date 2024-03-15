@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 /* Only parse code when included by parent */
-if (!defined('ACF_CLEANER')) {
+if (!defined('CF_CLEANER')) {
     die();
 }
 
@@ -47,7 +47,7 @@ $inf .= '<li>Get <b>empty</b> child entries (<i>value</i>).</li>';
 $inf .= '<li>Select / delete empty parent and child.</li>';
 $inf .= '</ol></p><hr>';
 
-_e($inf, 'acf_cleaner');
+_e($inf, 'cf_cleaner');
 
 /* --------------------------------------------------- */
 /* Open the connection to the database */
@@ -131,7 +131,7 @@ if (count($array_fields ?? array())) {
     }
 }
 
-_e('<h4>ORPHANED ENTRIES <span id="acf_orphan" style="color:#888;">#0</span></h4>', 'acf_cleaner');
+_e('<h4>ORPHANED ENTRIES <span id="acf_orphan" style="color:#888;">#0</span></h4>', 'cf_cleaner');
 echo '<table class="widefat fixed striped">';
 echo '<thead><tr><td>Entry</td><td>Type</td><td><code>meta_id</code></td><td><code>post_id</code></td><td><code>meta_key</code></td><td><code>meta_value</code></td></tr></thead>';
 echo '<tfoot><tr><td>Entry</td><td>Type</td><td><code>meta_id</code></td><td><code>post_id</code></td><td><code>meta_key</code></td><td><code>meta_value</code></td></tr></tfoot><tbody>';
@@ -149,7 +149,7 @@ if ($result && !$acf_clean_1) {
         echo '<td>' . sprintf('%03d', $i) . '</td>';
         echo '<td><code>orphan</code></td>';
         echo '<td>' . $row['meta_id'] . '</td>';
-        echo '<td>' . $row['post_id'] . '</td>';
+        edit_post_link( $row['post_id'], '<td>', '</td>', $row['post_id']);
         echo '<td>' . $row['meta_key'] . '</td>';
         echo '<td>' . htmlentities($row['meta_value']) . '</td>';
         echo '</tr>';
@@ -159,7 +159,7 @@ if ($result && !$acf_clean_1) {
 } else {
     /* No entries are discovered */
     $msg .= 'No entries found during the <b>3rd</b> query [<b>orphaned entries</b>].<br>';
-    _e('<tr><td colspan="6" class="notice notice-success">No <b>orphaned</b> entries found.</td></tr>', 'acf_cleaner');
+    _e('<tr><td colspan="6" class="notice notice-success">No <b>orphaned</b> entries found.</td></tr>', 'cf_cleaner');
 
 }
 
@@ -204,7 +204,7 @@ if ($result) {
         }
     }
 
-    _e('<h4>EMPTY ENTRIES <span id="acf_empty" style="color:#888;">#0</span></h4>', 'acf_cleaner');
+    _e('<h4>EMPTY ENTRIES <span id="acf_empty" style="color:#888;">#0</span></h4>', 'cf_cleaner');
     echo '<table class="widefat fixed striped">';
     echo '<thead><tr><td>Entry</td><td>Type</td><td><code>meta_id</code></td><td><code>post_id</code></td><td><code>meta_key</code></td><td><code>meta_value</code></td></tr></thead>';
     echo '<tfoot><tr><td>Entry</td><td>Type</td><td><code>meta_id</code></td><td><code>post_id</code></td><td><code>meta_key</code></td><td><code>meta_value</code></td></tr></tfoot><tbody>';
@@ -221,7 +221,7 @@ if ($result) {
             echo '<td>' . sprintf('%03d', $i) . '</td>';
             echo '<td><code>empty</code></td>';
             echo '<td>' . $row['meta_id'] . '</td>';
-            echo '<td>' . $row['post_id'] . '</td>';
+            edit_post_link( $row['post_id'], '<td>', '</td>', $row['post_id']);
             echo '<td>' . $row['meta_key'] . '</td>';
             echo '<td>' . htmlentities($row['meta_value']) . '</td>';
             echo '</tr>';
@@ -231,7 +231,7 @@ if ($result) {
 
     } else {
         $msg .= 'No entries found during the <b>4th</b> query [<b>empty entries</b>].<br>';
-        _e('<tr><td colspan="6" class="notice notice-success">No <b>empty</b> entries found.</td></tr>', 'acf_cleaner');
+        _e('<tr><td colspan="6" class="notice notice-success">No <b>empty</b> entries found.</td></tr>', 'cf_cleaner');
     }
 
     echo '</tbody></table>';
@@ -253,7 +253,7 @@ if ($msg || $err) {
     ?>
 
     <div class="notice notice-<?php echo $class; ?> is-dismissible" style="padding:10px 12px;">
-        <?php _e($txt, 'acf_cleaner'); ?>
+        <?php _e($txt, 'cf_cleaner'); ?>
     </div>
 
     <?php
@@ -307,7 +307,7 @@ if ($acf_clean_1 || $acf_clean_2) {
 
     <div class="notice notice-success is-dismissible hidden" id="acf_succeed">
         <p>
-            <?php _e('<b>Succeeded</b> : ACF Cleaner removed <b><span>0</span> entries</b>.', 'acf_cleaner'); ?>
+            <?php _e('<b>Succeeded</b> : ACF Cleaner removed <b><span>0</span> entries</b>.', 'cf_cleaner'); ?>
         </p>
     </div>
 
