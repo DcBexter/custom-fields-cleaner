@@ -5,11 +5,11 @@ if ( ! defined( 'ABSPATH' ) ) {
   exit;
 }
 
-$acf_ajax = strpos($_SERVER['HTTP_ACCEPT'], 'application') !== false?'false':'true';
+$acf_ajax = str_contains($_SERVER['HTTP_ACCEPT'], 'application') ?'false':'true';
 $acf_clean_1 = false;
 $acf_clean_2 = false;
 $acf_filter = 0;
-$acf_prefix = 'ACF__';
+$acf_prefix = 'ACF_';
 $acf_db_prefix = 'wp_';
 
   if ($acf_ajax == 'true') {
@@ -155,7 +155,7 @@ if (!empty($_COOKIE['acf_db_prefix']) && strlen($_COOKIE['acf_db_prefix']) > 1) 
 
     <p>
       <button data-action="acf-clean" class="button button-primary" type="submit"><?php _e('ACF <b>clean</b>', 'acf_cleaner'); ?></button>
-      <button data-action="acf-check" class="button button-secondary" type="button" onclick="acf_prefix_save();location.href=location.href;"><?php _e('ACF <b>check</b>', 'acf_cleaner'); ?></button>
+      <button data-action="acf-check" class="button button-secondary" type="button" onclick="acf_prefix_save();window.location.reload();"><?php _e('ACF <b>check</b>', 'acf_cleaner'); ?></button>
     </p>
 
   </form>
