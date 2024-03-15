@@ -1,8 +1,8 @@
 # CF Cleaner
 
-![WordPress - CF Cleaner](https://raw.githubusercontent.com/1n3JgKl9pQ6cUMrW/acf-cleaner/04d796be6194654d382c59419805c93a746c5c65/acf-cleaner-logotype.png "WordPress - CF Cleaner")
+![WordPress - CF Cleaner](cf-cleaner-logotype.png "WordPress - CF Cleaner")
 
-Advanced Custom Fields Cleaner / remove empty and orphaned CF entries from your WordPress database.
+Custom Fields Cleaner / remove empty and orphaned CF entries from your WordPress database. Either created by plugins or by yourself.
 
 ----------
 
