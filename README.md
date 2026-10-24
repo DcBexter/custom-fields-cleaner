@@ -20,6 +20,7 @@ WordPress admin tool for removing empty and orphaned post metadata with a chosen
 **Empty** means an exact empty string. Values `0`, whitespace, serialized values and nonempty fields on existing posts remain.
 **Orphan** means the parent post no longer exists. Orphaned matching rows are deleted even when their values are nonempty; deleting an ACF field definition alone is not sufficient.
 Both filters apply the field prefix. ACF reference keys such as `_CF_title` remain unless your prefix explicitly matches them.
+Each deletion atomically matches the scanned metadata and current filter. Concurrent edits and restored orphan parents are skipped; post-deletion hooks run only for successful removals and WordPress metadata caches are invalidated.
 
 Only the active site’s WordPress post metadata table is used. Custom database-table selection and prefix cookies were removed to prevent cross-table deletion. No automatic database cleaning runs.
 
@@ -33,7 +34,7 @@ wp eval-file wp-content/plugins/custom-fields-cleaner/tests/integration.php
 ```
 
 Run tests only against a throwaway database: fixtures deliberately create and delete metadata.
-Checks cover deletion scope, preserved values, filters, nonce/capability checks, escaped output, cache invalidation and database errors.
+Checks cover deletion scope, preserved values, filters, nonce/capability checks, escaped output, cache invalidation, concurrent edits from another database connection, restored parents and database errors.
 
 Renovate updates GitHub Actions and CI service images. All update PRs, including major and security updates, may auto-merge only after required CI passes.
 Dependabot handles available security updates. These workflows do not publish plugin releases or deploy WordPress sites.
@@ -42,7 +43,7 @@ Replace plugin files manually to update; GitHub is not a WordPress automatic-upd
 
 ## 1.5.1
 
-- Use WordPress’s database connection and metadata deletion API.
+- Use WordPress’s database connection, metadata deletion filters/hooks and cache invalidation.
 - Enforce administrator capability, nonce and confirmation; escape output and prefix queries.
 - Restrict orphan cleanup to the selected literal field prefix.
 - Replace outdated setup instructions with current installation and test steps.
