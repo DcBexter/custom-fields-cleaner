@@ -37,6 +37,7 @@ Checks cover deletion scope, preserved values, filters, nonce/capability checks,
 
 Renovate updates GitHub Actions and CI service images. All update PRs, including major and security updates, may auto-merge only after required CI passes.
 Dependabot handles available security updates. These workflows do not publish plugin releases or deploy WordPress sites.
+CodeQL scans GitHub Actions workflows on PRs, master pushes and weekly; PHP is not supported by CodeQL. PHP syntax and behavior are covered by the WordPress integration matrix above.
 Replace plugin files manually to update; GitHub is not a WordPress automatic-update source.
 
 ## 1.5.1
