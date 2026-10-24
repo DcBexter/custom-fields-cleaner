@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  schedule:
+    - cron: '23 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependencies:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-scopes: runtime,development,unknown
+
+  wordpress:
+    name: WordPress / PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4', '8.5']
+    services:
+      database:
+        image: mariadb:11.8@sha256:f16d7a344413e519dff518f27bdb221388f84b0d274c97c4fb5f2cb0dc1b34fa
+        env:
+          MARIADB_ROOT_PASSWORD: integration
+          MARIADB_DATABASE: wordpress
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: shivammathur/setup-php@4424c9aab975b57bd706ee5a39c6b4334d6e4f60 # 2.40.0
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli
+          tools: wp-cli
+          coverage: none
+          ini-values: memory_limit=512M
+      - name: PHP syntax
+        run: find . -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l
+      - name: Latest stable WordPress integration
+        env:
+          WP_CLI_PHP_ARGS: '-d error_reporting=E_ALL'
+        run: |
+          mkdir -p /tmp/cf-cleaner-wp
+          wp core download --path=/tmp/cf-cleaner-wp
+          wp config create --path=/tmp/cf-cleaner-wp --dbname=wordpress --dbuser=root --dbpass=integration --dbhost=127.0.0.1:3306 --dbprefix=cf_test_
+          wp core install --path=/tmp/cf-cleaner-wp --url=http://localhost --title=Integration --admin_user=integration --admin_password=integration-only --admin_email=test@example.invalid --skip-email
+          ln -s "$GITHUB_WORKSPACE" /tmp/cf-cleaner-wp/wp-content/plugins/custom-fields-cleaner
+          wp plugin activate custom-fields-cleaner --path=/tmp/cf-cleaner-wp
+          wp eval-file "$GITHUB_WORKSPACE/tests/integration.php" --path=/tmp/cf-cleaner-wp
+
+  required:
+    name: Required CI
+    if: always()
+    needs: [wordpress, dependencies]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every PHP integration check
+        env:
+          RESULT: ${{ needs.wordpress.result }}
+          DEPENDENCIES: ${{ needs.dependencies.result }}
+        run: test "$RESULT" = success && { test "$DEPENDENCIES" = success || test "$DEPENDENCIES" = skipped; }

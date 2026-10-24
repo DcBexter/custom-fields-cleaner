@@ -1,149 +1,57 @@
 <?php
-
-/* Exit if accessed directly */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-global $wpdb;
-
-$cf_ajax      = str_contains( $_SERVER['HTTP_ACCEPT'], 'application' ) ? 'false' : 'true';
-$cf_clean_1   = false;
-$cf_clean_2   = false;
-$cf_filter    = 0;
-$cf_prefix    = 'CF_';
-$cf_db_prefix = $wpdb->prefix;
-if ( $cf_ajax == 'true' ) {
-	_e( '<h2>Access denied.</h2>', 'cf_cleaner' );
-} else if ( is_user_logged_in() && is_admin() ) {
-	?>
-
-	<div class="wrap">
-		<h2><?php _e( 'CF Cleaner', 'cf_cleaner' ); ?></h2>
-		<?php
-		/* Allow custom prefixes for CF names */
-		if ( ! empty( $_COOKIE['cf_prefix'] ) && strlen( $_COOKIE['cf_prefix'] ) > 2 ) {
-			$cf_prefix = $_COOKIE['cf_prefix'];
-		}
-
-		/* Allow custom prefixes for wp-database-tables */
-		if ( ! empty( $_COOKIE['cf_db_prefix'] ) && strlen( $_COOKIE['cf_db_prefix'] ) > 1 ) {
-			$cf_db_prefix = $_COOKIE['cf_db_prefix'];
-		}
-
-		/* Check or clean the database */
-		if ( isset( $_POST['cf_clean'] ) ) {
-			if ( $_POST['cf_clean'] === 'clean' ) {
-				$cf_filter = $_POST['cf_filter'];
-
-				switch ( $cf_filter ) {
-					case '1':
-						$cf_clean_1 = true;
-						break;
-					case '2':
-						$cf_clean_2 = true;
-						break;
-					case '3':
-						$cf_clean_1 = true;
-						$cf_clean_2 = true;
-						break;
-					default:
-						// TODO
-				}
-			} else {
-				?>
-				<div class="notice notice-error is-dismissible">
-					<p>
-						<?php printf( __( '<b>Error</b> : passphrase doesn\'t match "<code>%1$s</code>".', 'cf_cleaner' ), 'clean' ); ?>
-					</p>
-				</div>
-				<?php
-			}
-		} else {
-			?>
-			<div class="notice notice-warning is-dismissible">
-				<p>
-					<?php printf( __( 'Before you do any cleaning <a href="%1$s" target="%2$s" title="view plug-in (external)">backup</a> your database first.<br>This tool only proceeds (ACF) fieldnames with a consistent prefix, like <code>CF__</code> (case-insensitive).<br><b>Notice :</b> when restoring CF-entries from trash, <i>false positives</i> can show up as orphans; (re-) save all pages (containing those entries) before cleaning.', 'cf_cleaner' ), 'https://wordpress.org/plugins/wp-dbmanager/', '_blank' ); ?>
-				</p>
-			</div>
-			<?php
-		}
-		?>
-		<script>
-			/* Save alternative prefixes as a cookie (don't mesh the database...) */
-			function cf_prefix_save() {
-				try {
-					document.cookie = "cf_prefix=" + document.getElementById("cf_prefix").value + ";";
-					document.cookie = "cf_db_prefix=" + document.getElementById("cf_db_prefix").value + ";";
-				} catch (error) {
-					alert(error.message);
-				}
-			}
-
-		</script>
-
-		<form method="post" action="#" onsubmit="cf_prefix_save();">
-			<table class="form-table">
-				<tr>
-					<th scope="row"><label for="cf_filter"><?php _e( 'What to clean :', 'cf_cleaner' ); ?></label></th>
-					<td>
-						<select style="min-width:160px;" name="cf_filter" id="cf_filter">
-							<option value="3"<?php if ( $cf_filter == '3' || $cf_filter == '0' ) {
-								echo ' selected';
-							} ?>><?php _e( 'Clean all', 'cf_cleaner' ); ?></option>
-							<option value="1"<?php if ( $cf_filter == '1' ) {
-								echo ' selected';
-							} ?>><?php _e( 'Orphans only', 'cf_cleaner' ); ?></option>
-							<option value="2"<?php if ( $cf_filter == '2' ) {
-								echo ' selected';
-							} ?>><?php _e( 'Empty only', 'cf_cleaner' ); ?></option>
-						</select>
-					</td>
-				</tr>
-
-				<tr>
-					<th scope="row"><label
-							for="cf_db_prefix"><?php _e( 'Database-table prefix :', 'cf_cleaner' ); ?></label></th>
-					<td><input type="text" name="cf_db_prefix" id="cf_db_prefix" value="<?php echo $cf_db_prefix; ?>"
-					           placeholder="wp_" style="min-width:160px;"></td>
-				</tr>
-
-				<tr>
-					<th scope="row"><label
-							for="cf_prefix"><?php _e( 'Field prefix (at least 3 chrs.) :', 'cf_cleaner' ); ?></label>
-					</th>
-					<td><input type="text" name="cf_prefix" id="cf_prefix" value="<?php echo $cf_prefix; ?>"
-					           placeholder="cf_" style="min-width:160px;"></td>
-				</tr>
-
-				<tr>
-					<th scope="row"><?php printf( __( 'Type <code>%1$s</code> before submit :', 'cf_cleaner' ), 'clean' ); ?></th>
-					<td><label>
-							<input type="text" name="cf_clean" value="" placeholder="..." style="min-width:160px;">
-						</label></td>
-				</tr>
-
-			</table>
-
-			<p>
-				<button data-action="cf-clean" class="button button-primary"
-				        type="submit"><?php _e( 'CF <b>clean</b>', 'cf_cleaner' ); ?></button>
-				<button data-action="cf-check" class="button button-secondary" type="button"
-				        onclick="cf_prefix_save();window.location = location.href;"><?php _e( 'CF <b>check</b>', 'cf_cleaner' ); ?></button>
-			</p>
-
-		</form>
-
-		<br>
-		<hr>
-
-		<?php
-		define( 'CF_CLEANER', true );
-		require __DIR__ . '/cf-cleaner-queries.php'
-		?>
-	</div>
-
-	<?php
-} else {
-	_e( '<h2>Access denied.</h2>', 'cf_cleaner' );
+if ( ! current_user_can( 'manage_options' ) ) {
+	wp_die( esc_html__( 'Access denied.', 'cf_cleaner' ), '', array( 'response' => 403 ) );
 }
+
+$cf_prefix = 'CF_';
+$cf_filter = '3';
+$cf_result = null;
+if ( 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? '' ) ) {
+	check_admin_referer( 'cf_cleaner_clean' );
+	$cf_prefix = isset( $_POST['cf_prefix'] ) && is_string( $_POST['cf_prefix'] ) ? wp_unslash( $_POST['cf_prefix'] ) : '';
+	$cf_filter = isset( $_POST['cf_filter'] ) && is_string( $_POST['cf_filter'] ) ? wp_unslash( $_POST['cf_filter'] ) : '';
+	if ( isset( $_POST['cf_action'] ) && 'clean' === $_POST['cf_action'] ) {
+		$cf_result = isset( $_POST['cf_clean'] ) && 'clean' === $_POST['cf_clean']
+			? cf_cleaner_clean( $cf_prefix, $cf_filter )
+			: new WP_Error( 'passphrase', __( 'Type clean to confirm deletion.', 'cf_cleaner' ) );
+	}
+}
+$cf_rows = cf_cleaner_find( $cf_prefix, $cf_filter );
 ?>
+<div class="wrap">
+	<h1><?php esc_html_e( 'Custom Fields Cleaner', 'cf_cleaner' ); ?></h1>
+	<p><?php esc_html_e( 'Back up your database first. Deletion cannot be undone. Only matching field prefixes in this site’s post metadata are processed. Orphan means the parent post no longer exists; a deleted ACF field definition alone does not make its values orphaned.', 'cf_cleaner' ); ?></p>
+	<?php if ( null !== $cf_result ) : ?>
+		<div class="notice <?php echo is_wp_error( $cf_result ) ? 'notice-error' : 'notice-success'; ?>"><p><?php
+			echo esc_html( is_wp_error( $cf_result ) ? $cf_result->get_error_message() : sprintf( __( 'Removed %d entries.', 'cf_cleaner' ), $cf_result ) );
+		?></p></div>
+	<?php endif; ?>
+	<form method="post">
+		<?php wp_nonce_field( 'cf_cleaner_clean' ); ?>
+		<table class="form-table">
+			<tr><th><label for="cf_filter"><?php esc_html_e( 'What to clean', 'cf_cleaner' ); ?></label></th><td>
+				<select name="cf_filter" id="cf_filter">
+					<?php foreach ( array( '3' => __( 'Clean all', 'cf_cleaner' ), '1' => __( 'Orphans only', 'cf_cleaner' ), '2' => __( 'Empty only', 'cf_cleaner' ) ) as $cf_value => $cf_label ) : ?>
+						<option value="<?php echo esc_attr( $cf_value ); ?>" <?php selected( $cf_filter, (string) $cf_value ); ?>><?php echo esc_html( $cf_label ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</td></tr>
+			<tr><th><label for="cf_prefix"><?php esc_html_e( 'Field prefix', 'cf_cleaner' ); ?></label></th><td><input name="cf_prefix" id="cf_prefix" value="<?php echo esc_attr( $cf_prefix ); ?>" minlength="3" maxlength="191" required> <span><?php esc_html_e( 'Case insensitive; % and _ are literal characters.', 'cf_cleaner' ); ?></span></td></tr>
+			<tr><th><label for="cf_clean"><?php esc_html_e( 'Type clean to delete', 'cf_cleaner' ); ?></label></th><td><input name="cf_clean" id="cf_clean" autocomplete="off"></td></tr>
+		</table>
+		<p><button class="button button-secondary" name="cf_action" value="check"><?php esc_html_e( 'Check', 'cf_cleaner' ); ?></button> <button class="button button-primary" name="cf_action" value="clean"><?php esc_html_e( 'Clean', 'cf_cleaner' ); ?></button></p>
+	</form>
+	<?php if ( is_wp_error( $cf_rows ) ) : ?>
+		<div class="notice notice-error"><p><?php echo esc_html( $cf_rows->get_error_message() ); ?></p></div>
+	<?php else : ?>
+		<h2><?php echo esc_html( sprintf( __( '%d matching entries', 'cf_cleaner' ), count( $cf_rows ) ) ); ?></h2>
+		<table class="widefat striped"><thead><tr><th>meta_id</th><th>post_id</th><th>meta_key</th><th>meta_value</th></tr></thead><tbody>
+			<?php foreach ( $cf_rows as $cf_row ) : ?>
+				<tr><td><?php echo esc_html( $cf_row->meta_id ); ?></td><td><?php echo esc_html( $cf_row->post_id ); ?></td><td><?php echo esc_html( $cf_row->meta_key ); ?></td><td><?php echo esc_html( $cf_row->meta_value ); ?></td></tr>
+			<?php endforeach; ?>
+		</tbody></table>
+	<?php endif; ?>
+</div>
