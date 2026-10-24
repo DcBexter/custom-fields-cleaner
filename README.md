@@ -35,7 +35,7 @@ wp eval-file wp-content/plugins/custom-fields-cleaner/tests/integration.php
 Run tests only against a throwaway database: fixtures deliberately create and delete metadata.
 Checks cover deletion scope, preserved values, filters, nonce/capability checks, escaped output, cache invalidation and database errors.
 
-Renovate updates GitHub Actions and CI service images. Minor, patch, pin and digest PRs may auto-merge after required CI; major updates require human review.
+Renovate updates GitHub Actions and CI service images. All update PRs, including major and security updates, may auto-merge only after required CI passes.
 Dependabot handles available security updates. These workflows do not publish plugin releases or deploy WordPress sites.
 Replace plugin files manually to update; GitHub is not a WordPress automatic-update source.
 
